@@ -1,6 +1,17 @@
 name: Production Deploy
 run-name: Deploy to ${{ inputs.deploy_target }} by @${{ github.actor }}
 on:
+  workflow_call:
+    inputs:
+      build_id:
+        required: true
+        type: number
+      deploy_target:
+        required: true
+        type: string
+      perform_deploy:
+        required: true
+        type: boolean
   push:
     branches:
       - main
@@ -8,6 +19,7 @@ jobs:
   deploy:
     runs-on: debian-latest
     environment: Production
+    if: ${{ inputs.perform_deploy }}
     steps:
       - uses: actions/checkout@v3
       - name: Deploy WC Theme
@@ -15,3 +27,4 @@ jobs:
         with:
           api-url: ${{ secrets.GHOST_ADMIN_API_URL }}
           api-key: ${{ secrets.GHOST_ADMIN_API_KEY }}
+        run: deploy --build ${{ inputs.build_id }} --target ${{ inputs.deploy_target }}
